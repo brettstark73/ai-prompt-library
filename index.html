@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Prompt Library</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1 class="app-title">AI Prompt Library</h1>
+            <button id="addPromptBtn" class="btn btn-primary">+ Add Prompt</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Search and Filter Bar -->
+            <div class="controls">
+                <div class="search-container">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="search-input"
+                        placeholder="Search prompts by title, text, or tags..."
+                    >
+                </div>
+                <div class="filter-container">
+                    <select id="categoryFilter" class="category-filter">
+                        <option value="all">All Categories</option>
+                        <option value="Coding">Coding</option>
+                        <option value="Writing">Writing</option>
+                        <option value="Design">Design</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Research">Research</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <select id="sortSelect" class="sort-select">
+                        <option value="dateDesc">Newest First</option>
+                        <option value="dateAsc">Oldest First</option>
+                        <option value="alphabetical">A-Z</option>
+                        <option value="category">By Category</option>
+                        <option value="mostUsed">Most Used</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Export/Import Buttons -->
+            <div class="data-controls">
+                <button id="exportBtn" class="btn btn-secondary">Export Prompts</button>
+                <button id="importBtn" class="btn btn-secondary">Import Prompts</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;">
+            </div>
+
+            <!-- Prompts Grid -->
+            <div id="promptsContainer" class="prompts-grid">
+                <!-- Prompt cards will be inserted here dynamically -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <h2>No Prompts Yet</h2>
+                <p>Start building your AI prompt library by adding your first prompt!</p>
+                <button class="btn btn-primary" onclick="document.getElementById('addPromptBtn').click()">
+                    + Add Your First Prompt
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Modal -->
+    <div id="promptModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Prompt</h2>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <form id="promptForm">
+                <div class="form-group">
+                    <label for="promptTitle">Title *</label>
+                    <input
+                        type="text"
+                        id="promptTitle"
+                        class="form-input"
+                        placeholder="e.g., Code Review Assistant"
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="promptText">Prompt Text *</label>
+                    <textarea
+                        id="promptText"
+                        class="form-textarea"
+                        placeholder="Enter your prompt text here..."
+                        rows="6"
+                        required
+                    ></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="promptCategory">Category *</label>
+                    <select id="promptCategory" class="form-input" required>
+                        <option value="">Select a category</option>
+                        <option value="Coding">Coding</option>
+                        <option value="Writing">Writing</option>
+                        <option value="Design">Design</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Research">Research</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="promptTags">Tags</label>
+                    <input
+                        type="text"
+                        id="promptTags"
+                        class="form-input"
+                        placeholder="e.g., python, debugging, best-practices (comma-separated)"
+                    >
+                    <small class="form-hint">Separate tags with commas</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveBtn">Save Prompt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
