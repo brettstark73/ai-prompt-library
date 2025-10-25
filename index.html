@@ -3,23 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Prompt Library</title>
+    <title>AI Prompt Library V2</title>
     <link rel="stylesheet" href="style.css">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
-<body>
+<body data-theme="light">
     <!-- Header -->
     <header class="header">
+        <div class="container header-container">
+            <div class="header-left">
+                <h1 class="app-title">AI Prompt Library <span class="version-badge">V2</span></h1>
+                <div id="syncStatus" class="sync-status" style="display: none;">
+                    <span class="sync-icon">●</span>
+                    <span class="sync-text">Synced</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="darkModeToggle" class="icon-btn" title="Toggle dark mode">
+                    <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                    <svg class="moon-icon" style="display: none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+                <div id="authContainer">
+                    <button id="signInBtn" class="btn btn-primary">Sign In</button>
+                    <div id="userProfile" class="user-profile" style="display: none;">
+                        <img id="userPhoto" class="user-photo" src="" alt="User">
+                        <span id="userName" class="user-name"></span>
+                        <button id="signOutBtn" class="btn btn-secondary btn-sm">Sign Out</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="container">
-            <h1 class="app-title">AI Prompt Library</h1>
-            <button id="addPromptBtn" class="btn btn-primary">+ Add Prompt</button>
+            <button id="addPromptBtn" class="btn btn-primary btn-block-mobile">+ Add Prompt</button>
         </div>
     </header>
 
+    <!-- Auth Banner (shown when not logged in) -->
+    <div id="authBanner" class="auth-banner" style="display: none;">
+        <div class="container">
+            <div class="banner-content">
+                <div class="banner-icon">☁️</div>
+                <div class="banner-text">
+                    <strong>Sign in to unlock cloud sync!</strong>
+                    <span>Access your prompts from any device, create folders, and never lose your data.</span>
+                </div>
+                <button id="bannerSignInBtn" class="btn btn-primary btn-sm">Sign In</button>
+                <button id="dismissBanner" class="btn-link">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="main-content">
-        <div class="container">
-            <!-- Search and Filter Bar -->
-            <div class="controls">
+        <div class="app-layout">
+            <!-- Folders Sidebar -->
+            <aside id="foldersSidebar" class="folders-sidebar" style="display: none;">
+                <div class="sidebar-header">
+                    <h3>Folders</h3>
+                    <button id="addFolderBtn" class="icon-btn" title="Add folder">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="sidebar-nav">
+                    <button class="nav-item active" data-folder="all">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                        </svg>
+                        <span>All Prompts</span>
+                        <span class="count" id="allCount">0</span>
+                    </button>
+                    <button class="nav-item" data-folder="favorites">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        <span>Favorites</span>
+                        <span class="count" id="favCount">0</span>
+                    </button>
+                    <hr class="sidebar-divider">
+                </div>
+                <div id="foldersContainer" class="folders-list">
+                    <!-- Dynamic folders will be added here -->
+                </div>
+            </aside>
+
+            <div class="main-container">
+                <div class="container">
+                    <!-- Search and Filter Bar -->
+                    <div class="controls">
                 <div class="search-container">
                     <input
                         type="text"
@@ -31,6 +120,7 @@
                 <div class="filter-container">
                     <select id="categoryFilter" class="category-filter">
                         <option value="all">All Categories</option>
+                        <option value="favorites">⭐ Favorites</option>
                         <option value="Coding">Coding</option>
                         <option value="Writing">Writing</option>
                         <option value="Design">Design</option>
@@ -44,6 +134,7 @@
                         <option value="alphabetical">A-Z</option>
                         <option value="category">By Category</option>
                         <option value="mostUsed">Most Used</option>
+                        <option value="lastUsed">Recently Used</option>
                     </select>
                 </div>
             </div>
@@ -70,9 +161,107 @@
                 <button class="btn btn-primary" onclick="document.getElementById('addPromptBtn').click()">
                     + Add Your First Prompt
                 </button>
+                </div>
             </div>
         </div>
     </main>
+
+    <!-- Stats/Analytics Modal -->
+    <div id="statsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 Analytics & Insights</h2>
+                <button class="close-btn" id="closeStatsModal">&times;</button>
+            </div>
+            <div class="stats-container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalPromptsStatValue">0</div>
+                        <div class="stat-label">Total Prompts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalUsesStatValue">0</div>
+                        <div class="stat-label">Total Uses</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="favoriteCountStatValue">0</div>
+                        <div class="stat-label">Favorites</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="folderCountStatValue">0</div>
+                        <div class="stat-label">Folders</div>
+                    </div>
+                </div>
+                <div class="stats-section">
+                    <h3>Most Used Prompts</h3>
+                    <div id="topPromptsListStats" class="top-prompts-list">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+                <div class="stats-section">
+                    <h3>Category Breakdown</h3>
+                    <div id="categoryBreakdownStats" class="category-breakdown">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Folder Modal -->
+    <div id="folderModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2 id="folderModalTitle">New Folder</h2>
+                <button class="close-btn" id="closeFolderModal">&times;</button>
+            </div>
+            <form id="folderForm">
+                <div class="form-group">
+                    <label for="folderName">Folder Name *</label>
+                    <input
+                        type="text"
+                        id="folderName"
+                        class="form-input"
+                        placeholder="e.g., Work Prompts"
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="folderColor">Color</label>
+                    <div class="color-picker">
+                        <label class="color-option">
+                            <input type="radio" name="folderColor" value="blue" checked>
+                            <span class="color-swatch" style="background: #6366f1;"></span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="folderColor" value="green">
+                            <span class="color-swatch" style="background: #10b981;"></span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="folderColor" value="purple">
+                            <span class="color-swatch" style="background: #8b5cf6;"></span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="folderColor" value="orange">
+                            <span class="color-swatch" style="background: #f97316;"></span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="folderColor" value="pink">
+                            <span class="color-swatch" style="background: #ec4899;"></span>
+                        </label>
+                        <label class="color-option">
+                            <input type="radio" name="folderColor" value="gray">
+                            <span class="color-swatch" style="background: #64748b;"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelFolderBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Folder</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Add/Edit Modal -->
     <div id="promptModal" class="modal">
@@ -124,6 +313,19 @@
                     >
                     <small class="form-hint">Separate tags with commas</small>
                 </div>
+                <div class="form-group" id="folderSelectGroup" style="display: none;">
+                    <label for="promptFolder">Folder</label>
+                    <select id="promptFolder" class="form-input">
+                        <option value="">No Folder</option>
+                        <!-- Folders will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="promptFavorite">
+                        <span>⭐ Mark as favorite</span>
+                    </label>
+                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="saveBtn">Save Prompt</button>
@@ -132,9 +334,44 @@
         </div>
     </div>
 
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>🔗 Share Prompt</h2>
+                <button class="close-btn" id="closeShareModal">&times;</button>
+            </div>
+            <div class="share-container">
+                <p class="share-description">Share this prompt with a public link</p>
+                <div class="form-group">
+                    <label>Share Link</label>
+                    <div class="input-group">
+                        <input
+                            type="text"
+                            id="shareLink"
+                            class="form-input"
+                            readonly
+                            value=""
+                        >
+                        <button id="copyShareLink" class="btn btn-primary">Copy</button>
+                    </div>
+                </div>
+                <div class="share-stats" id="shareStats" style="display: none;">
+                    <small>Views: <span id="shareViews">0</span></small>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast"></div>
 
-    <script src="app.js"></script>
+    <!-- Floating Action Button (Mobile) -->
+    <button id="fabBtn" class="fab" title="View Analytics">
+        📊
+    </button>
+
+    <script type="module" src="firebase-config.js"></script>
+    <script src="app-v2.js"></script>
 </body>
 </html>
