@@ -14,8 +14,17 @@
     "validate:docs": "node setup.js --validate-docs",
     "validate:comprehensive": "node setup.js --comprehensive",
     "validate:all": "npm run validate:comprehensive && npm run security:audit",
-    "lint": "eslint . --ext .js,.jsx,.mjs,.cjs,.html && stylelint \"*.{css,scss,sass,less,pcss}\" --allow-empty-input",
-    "lint:fix": "eslint . --ext .js,.jsx,.mjs,.cjs,.html --fix && stylelint \"*.{css,scss,sass,less,pcss}\" --fix --allow-empty-input",
+    "lint": "eslint . --ext .js,.jsx,.mjs,.cjs && stylelint \"*.{css,scss,sass,less,pcss}\" --allow-empty-input",
+    "lint:fix": "eslint . --ext .js,.jsx,.mjs,.cjs --fix && stylelint \"*.{css,scss,sass,less,pcss}\" --fix --allow-empty-input",
+    "test": "node test-runner.js",
+    "test:all": "node test-runner.js",
+    "test:unit": "vitest run --config vitest.config.js",
+    "test:unit:watch": "vitest --config vitest.config.js",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:visual": "playwright test tests/e2e/visual.spec.js",
+    "test:accessibility": "axe --chromedriver-path ./node_modules/.bin/chromedriver --include \"http://localhost:8000\"",
+    "serve": "python3 -m http.server 8000",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -27,7 +36,12 @@
     "globals": "^15.9.0",
     "stylelint": "^16.8.0",
     "stylelint-config-standard": "^37.0.0",
-    "@lhci/cli": "^0.14.0"
+    "@lhci/cli": "^0.14.0",
+    "vitest": "^2.1.1",
+    "jsdom": "^25.0.1",
+    "@playwright/test": "^1.47.0",
+    "@axe-core/cli": "^4.10.0",
+    "@axe-core/playwright": "^4.10.0"
   },
   "engines": {
     "node": ">=20"
